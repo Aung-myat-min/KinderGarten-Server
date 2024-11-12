@@ -3,6 +3,7 @@ import express, { Request, Response, NextFunction } from "express";
 import bodyParser from "body-parser";
 import cors from "cors";
 import lessonRoute from "./routes/lesson";
+import testRoute from "./routes/test";
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -11,6 +12,7 @@ const PORT = process.env.PORT || 3000;
 app.use(cors());
 
 app.use("/lesson", lessonRoute);
+app.use("/test", testRoute);
 
 // Middleware for parsing JSON and urlencoded data
 app.use(express.json());
