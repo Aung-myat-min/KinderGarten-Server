@@ -1,9 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -11,4 +5,94 @@ generator client {
 datasource db {
   provider = "mysql"
   url      = env("DATABASE_URL")
+}
+
+model Lesson {
+  lessonId   Int        @id @default(autoincrement())
+  lessonType LessonType
+  subject    Subject
+  modules    Module[]
+}
+
+model Module {
+  moduleId Int     @id @default(autoincrement())
+  word     String
+  photoUrl String?
+  lessonId Int
+
+  Lesson Lesson @relation(fields: [lessonId], references: [lessonId])
+}
+
+model Test {
+  testId    Int        @id @default(autoincrement())
+  subject   Subject
+  testType  TestType
+  answer    String?
+  questions Question[] // A Test has multiple Questions
+}
+
+model Question {
+  questionId   Int          @id @default(autoincrement())
+  testId       Int
+  questionType QuestionType // Distinguishes the type of question (MultipleChoice, FillInTheBlank, PhotoQuestion)
+  text         String // General question text
+
+  multipleChoice MultipleChoice?
+  fillInTheBlank FillInTheBlank?
+  photoQuestion  PhotoQuestion?
+
+  Test Test @relation(fields: [testId], references: [testId], onDelete: Cascade)
+}
+
+model MultipleChoice {
+  questionId Int      @id @default(autoincrement())
+  question   Question @relation(fields: [questionId], references: [questionId], onDelete: Cascade)
+  options    Option[] // Options for the multiple-choice question
+}
+
+model FillInTheBlank {
+  questionId    Int      @id @default(autoincrement())
+  question      Question @relation(fields: [questionId], references: [questionId], onDelete: Cascade)
+  correctAnswer String // Correct answer for fill-in-the-blank questions
+}
+
+model PhotoQuestion {
+  questionId Int      @id @default(autoincrement())
+  question   Question @relation(fields: [questionId], references: [questionId], onDelete: Cascade)
+  photoUrl   String // URL of the image for photo questions
+}
+
+model Option {
+  optionId         Int     @id @default(autoincrement())
+  text             String
+  isCorrect        Boolean // Indicates the correct answer for MultipleChoice questions
+  multipleChoiceId Int
+
+  multipleChoice MultipleChoice @relation(fields: [multipleChoiceId], references: [questionId], onDelete: Cascade)
+}
+
+enum TestType {
+  MultipleChoice
+  FillInTheBlank
+  PhotoQuestion
+}
+
+enum QuestionType {
+  MultipleChoice
+  FillInTheBlank
+  PhotoQuestion
+}
+
+enum Subject {
+  English
+  Myanmar
+}
+
+enum LessonType {
+  letter
+  number
+  bodypart
+  color
+  animal
+  shape
 }
