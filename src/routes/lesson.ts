@@ -9,6 +9,7 @@ import {
 import { LessonType, Subject } from "@prisma/client";
 
 const lessonRoute = express.Router();
+lessonRoute.use(express.json());
 
 // Get all lessons
 lessonRoute.get("/", async (req, res) => {
@@ -22,7 +23,7 @@ lessonRoute.get("/", async (req, res) => {
 
 // Create a new lesson
 lessonRoute.post("/", async (req, res) => {
-  const { lessonType, subject, modules } = req.body;
+  const { lessonTitle, lessonType, subject, modules } = req.body;
 
   if (!lessonType || !subject) {
     res.status(400).json({
@@ -33,6 +34,7 @@ lessonRoute.post("/", async (req, res) => {
   }
 
   const response = await CreateLesson(
+    lessonTitle,
     lessonType as LessonType,
     subject as Subject,
     modules

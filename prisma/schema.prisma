@@ -8,10 +8,11 @@ datasource db {
 }
 
 model Lesson {
-  lessonId   Int        @id @default(autoincrement())
-  lessonType LessonType
-  subject    Subject
-  modules    Module[]
+  lessonId    Int        @id @default(autoincrement())
+  lessonType  LessonType
+  subject     Subject
+  modules     Module[]
+  lessonTitle String
 }
 
 model Module {

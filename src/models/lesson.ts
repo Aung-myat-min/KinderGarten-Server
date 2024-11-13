@@ -27,6 +27,7 @@ export async function GetLesson(): Promise<CustomResponse<Lesson[]>> {
 
 // Create a new lesson
 export async function CreateLesson(
+  lessonTitle: string,
   lessonType: LessonType,
   subject: Subject,
   modules?: { word: string; photoUrl?: string }[]
@@ -34,6 +35,7 @@ export async function CreateLesson(
   try {
     const newLesson = await prisma.lesson.create({
       data: {
+        lessonTitle,
         lessonType,
         subject,
         modules: {
