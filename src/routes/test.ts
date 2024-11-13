@@ -18,31 +18,43 @@ testRoute.get("/", async (req, res) => {
 
 // Route to create a new test
 testRoute.post("/", async (req, res) => {
-  const { subject, testType, answer, questions } = req.body;
+  const {
+    subject,
+    testType,
+    answer,
+    question,
+    multipleChoice,
+    fillInTheBlank,
+    photoQuestion,
+    options,
+  } = req.body;
 
   try {
-    // Validate inputs
-    if (!subject || !testType) {
+    // Validate required fields
+    if (!subject || !testType || !question) {
       res.status(400).json({
         status: "error",
-        message: "Subject and Test Type are required.",
+        message: "Subject, Test Type, and a question are required.",
       });
       return;
     }
 
+    // Call CreateTest with the provided data
     const result = await CreateTest(
       subject as Subject,
       testType as TestType,
       answer,
-      questions
+      question,
+      multipleChoice,
+      fillInTheBlank,
+      photoQuestion,
+      options
     );
 
     if (result.status === "success") {
       res.status(201).json(result);
-      return;
     } else {
       res.status(500).json(result);
-      return;
     }
   } catch (error) {
     res.status(500).json({
@@ -50,7 +62,6 @@ testRoute.post("/", async (req, res) => {
       message: "Failed to create test",
       error: error instanceof Error ? error.message : "Error",
     });
-    return;
   }
 });
 

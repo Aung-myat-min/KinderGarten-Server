@@ -25,18 +25,18 @@ model Module {
 }
 
 model Test {
-  testId    Int        @id @default(autoincrement())
-  subject   Subject
-  testType  TestType
-  answer    String?
-  questions Question[] // A Test has multiple Questions
+  testId   Int       @id @default(autoincrement())
+  subject  Subject
+  testType TestType
+  answer   String?
+  question Question? // One-to-one relation with Question
 }
 
 model Question {
   questionId   Int          @id @default(autoincrement())
-  testId       Int
-  questionType QuestionType // Distinguishes the type of question (MultipleChoice, FillInTheBlank, PhotoQuestion)
-  text         String // General question text
+  testId       Int          @unique
+  questionType QuestionType
+  text         String
 
   multipleChoice MultipleChoice?
   fillInTheBlank FillInTheBlank?

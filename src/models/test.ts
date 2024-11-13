@@ -5,6 +5,10 @@ import {
   Subject,
   Question,
   QuestionType,
+  Option,
+  MultipleChoice,
+  FillInTheBlank,
+  PhotoQuestion,
 } from "@prisma/client";
 import { CustomResponse } from "../type";
 
@@ -15,7 +19,7 @@ export async function GetTest(): Promise<CustomResponse<Test[]>> {
   try {
     const tests = await prisma.test.findMany({
       include: {
-        questions: true, // Include questions for each test
+        question: true, // Include questions for each test
       },
     });
 
@@ -37,20 +41,75 @@ export async function GetTest(): Promise<CustomResponse<Test[]>> {
 export async function CreateTest(
   subject: Subject,
   testType: TestType,
-  answer?: string,
-  questions?: Question[]
+  answer: string,
+  question: Question,
+  multipleChoice?: MultipleChoice,
+  fillInTheBlank?: FillInTheBlank,
+  photoQuestion?: PhotoQuestion,
+  options?: Option[]
 ): Promise<CustomResponse<Test>> {
   try {
+    // Create the test
     const newTest = await prisma.test.create({
       data: {
-        subject,
-        testType,
-        answer,
-        questions: {
-          create: questions,
-        },
+        subject: subject,
+        testType: testType,
+        answer: answer,
       },
     });
+
+    // Check if question text and type are provided
+    if (question?.text && question.questionType) {
+      // Create the main question
+      const createdQuestion = await prisma.question.create({
+        data: {
+          text: question.text,
+          questionType: question.questionType,
+          testId: newTest.testId,
+        },
+      });
+
+      // Handle MultipleChoice question type
+      if (question.questionType === "MultipleChoice" && multipleChoice) {
+        // Create MultipleChoice record
+        const createdMultipleChoice = await prisma.multipleChoice.create({
+          data: {
+            questionId: createdQuestion.questionId,
+          },
+        });
+
+        // Create options for MultipleChoice, if provided
+        if (options) {
+          await prisma.option.createMany({
+            data: options.map((option: Option) => ({
+              text: option.text,
+              isCorrect: option.isCorrect,
+              multipleChoiceId: createdMultipleChoice.questionId,
+            })),
+          });
+        }
+      }
+
+      // Handle FillInTheBlank question type
+      if (question.questionType === "FillInTheBlank" && fillInTheBlank) {
+        await prisma.fillInTheBlank.create({
+          data: {
+            questionId: createdQuestion.questionId,
+            correctAnswer: fillInTheBlank.correctAnswer,
+          },
+        });
+      }
+
+      // Handle PhotoQuestion question type
+      if (question.questionType === "PhotoQuestion" && photoQuestion) {
+        await prisma.photoQuestion.create({
+          data: {
+            questionId: createdQuestion.questionId,
+            photoUrl: photoQuestion.photoUrl,
+          },
+        });
+      }
+    }
 
     return {
       status: "success",
@@ -80,20 +139,20 @@ export async function EditTest(
         testId,
       },
       data: {
-        subject,
-        testType,
-        answer,
-        questions: {
-          update: questions?.map((question) => ({
-            where: {
-              questionId: question.questionId, // Unique identifier for the question
-            },
-            data: {
-              text: question.text, // Update text or other fields
-              questionType: question.questionType, // Update questionType or other fields
-            },
-          })),
-        },
+        // subject,
+        // testType,
+        // answer,
+        // question: {
+        //   update: questions?.map((question) => ({
+        //     where: {
+        //       questionId: question.questionId, // Unique identifier for the question
+        //     },
+        //     data: {
+        //       text: question.text, // Update text or other fields
+        //       questionType: question.questionType, // Update questionType or other fields
+        //     },
+        //   })),
+        // },
       },
     });
 
