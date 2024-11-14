@@ -3,6 +3,8 @@ import { GetTest, CreateTest, EditTest, DeleteTest } from "../models/test";
 import { Subject, TestType, QuestionType } from "@prisma/client";
 
 const testRoute = express.Router();
+testRoute.use(express.urlencoded({ extended: true }));
+testRoute.use(express.json());
 
 // Route to get all tests
 testRoute.get("/", async (req, res) => {

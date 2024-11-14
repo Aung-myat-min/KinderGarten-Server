@@ -49,13 +49,16 @@ lessonRoute.post("/", async (req, res) => {
 // Update an existing lesson
 lessonRoute.put("/:lessonId", async (req, res) => {
   const { lessonId } = req.params;
-  const { lessonType, subject, modules } = req.body;
+  const { lessonTitle, lessonType, subject, existingModules, newModules } =
+    req.body;
 
   const response = await EditLesson(
     parseInt(lessonId),
+    lessonTitle,
     lessonType as LessonType,
     subject as Subject,
-    modules
+    existingModules,
+    newModules
   );
   if (response.status === "success") {
     res.status(200).json(response);

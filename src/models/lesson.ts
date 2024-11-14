@@ -1,4 +1,10 @@
-import { PrismaClient, LessonType, Subject, Lesson } from "@prisma/client";
+import {
+  PrismaClient,
+  LessonType,
+  Subject,
+  Lesson,
+  Module,
+} from "@prisma/client";
 import { CustomResponse } from "../type";
 
 const prisma = new PrismaClient();
@@ -63,20 +69,35 @@ export async function CreateLesson(
 // Update an existing lesson
 export async function EditLesson(
   lessonId: number,
+  lessonTitle: string,
   lessonType?: LessonType,
   subject?: Subject,
-  modules?: { word: string; photoUrl?: string }[]
+  existingModules?: Module[],
+  newModules?: { word: string; photoUrl?: string }[]
 ): Promise<CustomResponse<Lesson>> {
   try {
+    // First, update existing modules if provided
+    if (existingModules) {
+      await Promise.all(
+        existingModules.map(async (module) =>
+          prisma.module.update({
+            where: { moduleId: module.moduleId },
+            data: { word: module.word, photoUrl: module.photoUrl },
+          })
+        )
+      );
+    }
+
+    // Then, handle new modules (if any) by creating them
     const updatedLesson = await prisma.lesson.update({
       where: { lessonId },
       data: {
+        lessonTitle,
         lessonType,
         subject,
-        modules: modules
+        modules: newModules
           ? {
-              deleteMany: {}, // Clear current modules
-              create: modules, // Add new modules
+              create: newModules, // Add new modules only
             }
           : undefined,
       },
@@ -84,6 +105,7 @@ export async function EditLesson(
         modules: true,
       },
     });
+
     return {
       status: "success",
       message: "Lesson updated successfully",
