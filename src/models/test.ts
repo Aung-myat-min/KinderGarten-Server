@@ -19,7 +19,18 @@ export async function GetTest(): Promise<CustomResponse<Test[]>> {
   try {
     const tests = await prisma.test.findMany({
       include: {
-        question: true, // Include questions for each test
+        question: {
+          include: {
+            // Include all possible sub-question types; only one will be populated per question
+            multipleChoice: {
+              include: {
+                options: true, // Include options if the question is of type MultipleChoice
+              },
+            },
+            fillInTheBlank: true, // Include if question is of type FillInTheBlank
+            photoQuestion: true, // Include if question is of type PhotoQuestion
+          },
+        },
       },
     });
 
