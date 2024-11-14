@@ -46,9 +46,10 @@ model Question {
 }
 
 model MultipleChoice {
-  questionId Int      @id @default(autoincrement())
-  question   Question @relation(fields: [questionId], references: [questionId], onDelete: Cascade)
-  options    Option[] // Options for the multiple-choice question
+  questionId          Int      @id @default(autoincrement())
+  multipleChoicePhoto String?
+  question            Question @relation(fields: [questionId], references: [questionId], onDelete: Cascade)
+  options             Option[]
 }
 
 model FillInTheBlank {

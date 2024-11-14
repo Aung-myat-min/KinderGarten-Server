@@ -75,6 +75,7 @@ export async function CreateTest(
         const createdMultipleChoice = await prisma.multipleChoice.create({
           data: {
             questionId: createdQuestion.questionId,
+            multipleChoicePhoto: multipleChoice.multipleChoicePhoto,
           },
         });
 
