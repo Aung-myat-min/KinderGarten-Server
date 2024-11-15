@@ -125,9 +125,16 @@ export async function DeleteLesson(
   lessonId: number
 ): Promise<CustomResponse<null>> {
   try {
+    // Delete related modules first
+    await prisma.module.deleteMany({
+      where: { lessonId },
+    });
+
+    // Delete the lesson
     await prisma.lesson.delete({
       where: { lessonId },
     });
+
     return {
       status: "success",
       message: "Lesson deleted successfully",
@@ -136,7 +143,7 @@ export async function DeleteLesson(
     return {
       status: "error",
       message: "Error deleting lesson",
-      error: error instanceof Error ? error.message : "Error!",
+      error: error instanceof Error ? error.message : "Unknown error occurred",
     };
   }
 }

@@ -78,15 +78,37 @@ testRoute.put("/:testId", async (req, res) => {
       subject as Subject,
       testType as TestType,
       answer,
-      questions
+      questions?.map((question: any) => ({
+        questionId: question.questionId,
+        text: question.text,
+        questionType: question.questionType as QuestionType,
+        multipleChoice: question.multipleChoice
+          ? {
+              multipleChoicePhoto: question.multipleChoice.multipleChoicePhoto,
+              options: question.multipleChoice.options?.map((option: any) => ({
+                optionId: option.optionId,
+                text: option.text,
+                isCorrect: option.isCorrect,
+              })),
+            }
+          : undefined,
+        fillInTheBlank: question.fillInTheBlank
+          ? {
+              correctAnswer: question.fillInTheBlank.correctAnswer,
+            }
+          : undefined,
+        photoQuestion: question.photoQuestion
+          ? {
+              photoUrl: question.photoQuestion.photoUrl,
+            }
+          : undefined,
+      }))
     );
 
     if (result.status === "success") {
       res.status(200).json(result);
-      return;
     } else {
       res.status(500).json(result);
-      return;
     }
   } catch (error) {
     res.status(500).json({
@@ -94,7 +116,6 @@ testRoute.put("/:testId", async (req, res) => {
       message: "Failed to update test",
       error: error instanceof Error ? error.message : "Error",
     });
-    return;
   }
 });
 

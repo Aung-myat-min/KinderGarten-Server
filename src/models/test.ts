@@ -143,30 +143,82 @@ export async function EditTest(
   subject?: Subject,
   testType?: TestType,
   answer?: string,
-  questions?: { questionId: number; text: string; questionType: QuestionType }[]
+  questions?: {
+    questionId: number;
+    text: string;
+    questionType: QuestionType;
+    multipleChoice?: {
+      multipleChoicePhoto?: string;
+      options?: { optionId: number; text: string; isCorrect: boolean }[];
+    };
+    fillInTheBlank?: { correctAnswer: string };
+    photoQuestion?: { photoUrl: string };
+  }[]
 ): Promise<CustomResponse<Test>> {
   try {
+    // Update the main test details
     const updatedTest = await prisma.test.update({
-      where: {
-        testId,
-      },
+      where: { testId },
       data: {
-        // subject,
-        // testType,
-        // answer,
-        // question: {
-        //   update: questions?.map((question) => ({
-        //     where: {
-        //       questionId: question.questionId, // Unique identifier for the question
-        //     },
-        //     data: {
-        //       text: question.text, // Update text or other fields
-        //       questionType: question.questionType, // Update questionType or other fields
-        //     },
-        //   })),
-        // },
+        subject,
+        testType,
+        answer,
       },
     });
+
+    // Update each question associated with the test
+    for (const question of questions || []) {
+      const updatedQuestion = await prisma.question.update({
+        where: { questionId: question.questionId },
+        data: {
+          text: question.text,
+          questionType: question.questionType,
+        },
+      });
+
+      // Update the related sub-question types based on questionType
+      if (
+        question.questionType === "MultipleChoice" &&
+        question.multipleChoice
+      ) {
+        const { multipleChoicePhoto, options } = question.multipleChoice;
+
+        // Update MultipleChoice fields
+        await prisma.multipleChoice.update({
+          where: { questionId: question.questionId },
+          data: { multipleChoicePhoto },
+        });
+
+        // Update options within MultipleChoice
+        if (options) {
+          for (const option of options) {
+            await prisma.option.update({
+              where: { optionId: option.optionId },
+              data: {
+                text: option.text,
+                isCorrect: option.isCorrect,
+              },
+            });
+          }
+        }
+      } else if (
+        question.questionType === "FillInTheBlank" &&
+        question.fillInTheBlank
+      ) {
+        await prisma.fillInTheBlank.update({
+          where: { questionId: question.questionId },
+          data: { correctAnswer: question.fillInTheBlank.correctAnswer },
+        });
+      } else if (
+        question.questionType === "PhotoQuestion" &&
+        question.photoQuestion
+      ) {
+        await prisma.photoQuestion.update({
+          where: { questionId: question.questionId },
+          data: { photoUrl: question.photoQuestion.photoUrl },
+        });
+      }
+    }
 
     return {
       status: "success",
