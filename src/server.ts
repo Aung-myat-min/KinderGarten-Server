@@ -1,38 +1,61 @@
-// src/index.ts
 import express, { Request, Response, NextFunction } from "express";
 import bodyParser from "body-parser";
 import cors from "cors";
+import multer from "multer";
+import multerS3 from "multer-s3";
+import { S3Client } from "@aws-sdk/client-s3";
 import lessonRoute from "./routes/lesson";
 import testRoute from "./routes/test";
-import path from "path";
-import multer from "multer";
 
 const app = express();
 const PORT = process.env.PORT || 3000;
-const upload = multer({ dest: path.join(__dirname, "../public/") });
 
+// AWS S3 Configuration
+const s3 = new S3Client({
+  region: process.env.S3_REGION,
+  credentials: {
+    accessKeyId: process.env.S3_ACCESS_KEY || "",
+    secretAccessKey: process.env.S3_SECRET_ACCESS_KEY || "",
+  },
+});
+// Multer-S3 Storage Configuration
+const upload = multer({
+  storage: multerS3({
+    s3: s3,
+    bucket: process.env.S3_BUCKET_NAME || "kingergarten",
+    acl: "public-read", // Make the file publicly readable
+    metadata: (req, file, cb) => {
+      cb(null, { fieldName: file.fieldname });
+    },
+    key: (req, file, cb) => {
+      const fileName = `${Date.now()}-${file.originalname}`;
+      cb(null, fileName); // Use a unique name for the file
+    },
+  }),
+});
+
+// Middleware
 app.use(cors());
-app.use(express.static(path.join(__dirname, "../public")));
-app.use("/uploads", express.static(path.join(__dirname, "../public")));
-console.log(path.join(__dirname, "../public"));
-app.use("/lesson", lessonRoute);
-app.use("/test", testRoute);
-
 app.use(express.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
-app.post("/upload", upload.single("image"), async (req, res) => {
+// Routes
+app.use("/lesson", lessonRoute);
+app.use("/test", testRoute);
+
+// File upload route
+app.post("/upload", upload.single("image"), (req, res) => {
   if (!req.file) {
     res.status(400).json({ message: "No file uploaded" });
     return;
   }
 
-  // Construct the relative file path
-  const fileUrl = `/uploads/${req.file.filename}`;
+  // Construct the S3 file URL
+  const fileUrl = (req.file as any).location;
   res.json({
     message: "File uploaded successfully",
     file: req.file,
-    fileUrl, // Return the relative path
+    fileUrl, // Return the S3 file URL
   });
 });
 
@@ -42,6 +65,7 @@ app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
   res.status(500).json({ message: "Something went wrong!" });
 });
 
+// Start the server
 app.listen(PORT, () => {
   console.log(`Server is running at http://localhost:${PORT}`);
 });

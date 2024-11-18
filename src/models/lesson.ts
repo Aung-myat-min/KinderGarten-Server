@@ -76,7 +76,25 @@ export async function EditLesson(
   newModules?: { word: string; photoUrl?: string }[]
 ): Promise<CustomResponse<Lesson>> {
   try {
-    // First, update existing modules if provided
+    // Find existing modules in the database
+    const currentModules = await prisma.module.findMany({
+      where: { lessonId },
+    });
+
+    // Delete modules not in the `existingModules` list
+    const currentModuleIds = currentModules.map((m) => m.moduleId);
+    const existingModuleIds = existingModules?.map((m) => m.moduleId) || [];
+    const modulesToDelete = currentModuleIds.filter(
+      (id) => !existingModuleIds.includes(id)
+    );
+
+    if (modulesToDelete.length > 0) {
+      await prisma.module.deleteMany({
+        where: { moduleId: { in: modulesToDelete } },
+      });
+    }
+
+    // Update existing modules
     if (existingModules) {
       await Promise.all(
         existingModules.map(async (module) =>
@@ -88,22 +106,20 @@ export async function EditLesson(
       );
     }
 
-    // Then, handle new modules (if any) by creating them
+    // Add new modules
+    const lessonUpdateData: any = {
+      lessonTitle,
+      lessonType,
+      subject,
+    };
+    if (newModules && newModules.length > 0) {
+      lessonUpdateData.modules = { create: newModules };
+    }
+
     const updatedLesson = await prisma.lesson.update({
       where: { lessonId },
-      data: {
-        lessonTitle,
-        lessonType,
-        subject,
-        modules: newModules
-          ? {
-              create: newModules, // Add new modules only
-            }
-          : undefined,
-      },
-      include: {
-        modules: true,
-      },
+      data: lessonUpdateData,
+      include: { modules: true },
     });
 
     return {
