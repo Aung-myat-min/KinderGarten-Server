@@ -71,7 +71,6 @@ testRoute.post("/", async (req, res) => {
 testRoute.put("/:testId", async (req, res) => {
   const { testId } = req.params;
   const { subject, testType, answer, questions } = req.body;
-
   try {
     const result = await EditTest(
       parseInt(testId),

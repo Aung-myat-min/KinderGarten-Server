@@ -4,3 +4,4 @@ export type CustomResponse<T = null> = {
   data?: T;
   error?: string;
 };
+
