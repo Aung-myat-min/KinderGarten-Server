@@ -7,6 +7,7 @@ import { S3Client } from "@aws-sdk/client-s3";
 import lessonRoute from "./routes/lesson";
 import testRoute from "./routes/test";
 import parentRoute from "./routes/parent";
+import childRoute from "./routes/child";
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -44,6 +45,7 @@ app.use(bodyParser.urlencoded({ extended: true }));
 app.use("/lesson", lessonRoute);
 app.use("/test", testRoute);
 app.use("/parent", parentRoute);
+app.use("/child", childRoute);
 
 // File upload route
 app.post("/upload", upload.single("image"), (req, res) => {
