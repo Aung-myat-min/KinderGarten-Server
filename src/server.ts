@@ -8,6 +8,7 @@ import lessonRoute from "./routes/lesson";
 import testRoute from "./routes/test";
 import parentRoute from "./routes/parent";
 import childRoute from "./routes/child";
+import { loginParent } from "./models/parent";
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -61,6 +62,24 @@ app.post("/upload", upload.single("image"), (req, res) => {
     file: req.file,
     fileUrl, // Return the S3 file URL
   });
+});
+
+app.post("/login", async (req, res) => {
+  const { email, password } = req.body;
+
+  const valid = await loginParent(email, password);
+
+  if (valid.status === "success" && valid.data) {
+    const { parent, childrenIds } = valid.data;
+
+    // Set cookies
+    res.cookie("parentId", parent.parentId, { httpOnly: true });
+    res.cookie("children", JSON.stringify(childrenIds), { httpOnly: true });
+
+    res.status(200).json({ message: "Login successful!" });
+  } else {
+    res.status(401).json({ message: valid.message });
+  }
 });
 
 // Error handling middleware

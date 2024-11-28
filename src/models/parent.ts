@@ -100,13 +100,21 @@ export async function UpdateParent(
 export async function loginParent(
   email: string,
   password: string
-): Promise<CustomResponse<Parent>> {
-  const response: CustomResponse<Parent> = { status: "error", message: "" };
+): Promise<CustomResponse<{ parent: Parent; childrenIds: number[] }>> {
+  const response: CustomResponse<{ parent: Parent; childrenIds: number[] }> = {
+    status: "error",
+    message: "",
+  };
 
   try {
-    // Fetch the parent by email
+    // Fetch the parent along with children IDs
     const parent = await prisma.parent.findUnique({
       where: { email: email },
+      include: {
+        children: {
+          select: { childId: true },
+        },
+      },
     });
 
     if (!parent) {
@@ -122,7 +130,10 @@ export async function loginParent(
       return response;
     }
 
-    response.data = parent;
+    // Extract children IDs
+    const childrenIds = parent.children.map((child) => child.childId);
+
+    response.data = { parent, childrenIds };
     response.status = "success";
     response.message = "Login successful!";
   } catch (error) {
