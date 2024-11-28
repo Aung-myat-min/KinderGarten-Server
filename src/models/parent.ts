@@ -1,3 +1,4 @@
+import bcrypt from "bcrypt";
 import { Parent, PrismaClient } from "@prisma/client";
 import { CustomResponse } from "../type";
 
@@ -9,7 +10,14 @@ export async function CreateNewParent(
   const response: CustomResponse<Parent> = { status: "error", message: "" };
 
   try {
-    const newParent = await prisma.parent.create({ data: parent });
+    // Encrypt the password before saving
+    const hashedPassword = await bcrypt.hash(parent.password, 10);
+
+    // Save the parent data with the encrypted password
+    const newParent = await prisma.parent.create({
+      data: { ...parent, password: hashedPassword },
+    });
+
     response.data = newParent;
     response.status = "success";
     response.message = "Parent Created!";
@@ -34,6 +42,7 @@ export async function GetParentById(
     if (!parent) {
       response.message = "Parent not found.";
     } else {
+      parent.password = "";
       response.data = parent;
       response.status = "success";
       response.message = "Parent retrieved successfully!";
@@ -83,6 +92,41 @@ export async function UpdateParent(
   } catch (error) {
     response.error = error instanceof Error ? error.message : "Error!";
     response.message = "Failed to update parent.";
+  }
+
+  return response;
+}
+
+export async function loginParent(
+  email: string,
+  password: string
+): Promise<CustomResponse<Parent>> {
+  const response: CustomResponse<Parent> = { status: "error", message: "" };
+
+  try {
+    // Fetch the parent by email
+    const parent = await prisma.parent.findUnique({
+      where: { email: email },
+    });
+
+    if (!parent) {
+      response.message = "Invalid email or password.";
+      return response;
+    }
+
+    // Compare the provided password with the stored hashed password
+    const isPasswordValid = await bcrypt.compare(password, parent.password);
+
+    if (!isPasswordValid) {
+      response.message = "Invalid email or password.";
+      return response;
+    }
+
+    response.data = parent;
+    response.status = "success";
+    response.message = "Login successful!";
+  } catch (error) {
+    response.error = error instanceof Error ? error.message : "Error!";
   }
 
   return response;

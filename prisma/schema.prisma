@@ -83,7 +83,7 @@ model Parent {
   DOB        DateTime
   NRC        String
   gender     Gender
-  email      String
+  email      String   @unique
   password   String
   profileURL String
 
