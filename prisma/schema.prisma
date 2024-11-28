@@ -13,6 +13,8 @@ model Lesson {
   subject     Subject
   modules     Module[]
   lessonTitle String
+
+  markedComplete MarkLessonComplete[]
 }
 
 model Module {
@@ -30,6 +32,8 @@ model Test {
   testType TestType
   answer   String?
   question Question? // One-to-one relation with Question
+
+  result TestResult[]
 }
 
 model Question {
@@ -71,6 +75,65 @@ model Option {
   multipleChoiceId Int
 
   multipleChoice MultipleChoice @relation(fields: [multipleChoiceId], references: [questionId], onDelete: Cascade)
+}
+
+model Parent {
+  parentId   Int      @id @default(autoincrement())
+  name       String
+  DOB        DateTime
+  NRC        String
+  gender     Gender
+  email      String
+  password   String
+  profileURL String
+
+  children Child[]
+}
+
+model Child {
+  childId    Int      @id @default(autoincrement())
+  name       String
+  DOB        DateTime
+  gender     Gender
+  createdAt  DateTime @default(now())
+  parentId   Int
+  profileURL String
+
+  parent            Parent               @relation(fields: [parentId], references: [parentId])
+  completedLesssons MarkLessonComplete[]
+  testResult        TestResult[]
+}
+
+model MarkLessonComplete {
+  completeId    Int        @id @default(autoincrement())
+  subject       Subject
+  lessonType    LessonType
+  completedDate DateTime   @default(now())
+  childId       Int
+  lessonId      Int
+
+  child  Child  @relation(fields: [childId], references: [childId])
+  lesson Lesson @relation(fields: [lessonId], references: [lessonId])
+}
+
+model TestResult {
+  resultId  Int      @id @default(autoincrement())
+  testType  TestType
+  subject   Subject
+  total     Int
+  correct   Int
+  wrong     Int
+  createdAt DateTime
+  childId   Int
+  testId    Int
+
+  child Child @relation(fields: [childId], references: [childId])
+  test  Test  @relation(fields: [testId], references: [testId])
+}
+
+enum Gender {
+  male
+  female
 }
 
 enum TestType {
