@@ -6,6 +6,7 @@ import multerS3 from "multer-s3";
 import { S3Client } from "@aws-sdk/client-s3";
 import lessonRoute from "./routes/lesson";
 import testRoute from "./routes/test";
+import parentRoute from "./routes/parent";
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -42,6 +43,7 @@ app.use(bodyParser.urlencoded({ extended: true }));
 // Routes
 app.use("/lesson", lessonRoute);
 app.use("/test", testRoute);
+app.use("/parent", parentRoute);
 
 // File upload route
 app.post("/upload", upload.single("image"), (req, res) => {
