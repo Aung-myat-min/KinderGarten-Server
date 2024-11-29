@@ -9,6 +9,7 @@ import testRoute from "./routes/test";
 import parentRoute from "./routes/parent";
 import childRoute from "./routes/child";
 import { loginParent } from "./models/parent";
+import cookieParser from "cookie-parser";
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -38,9 +39,15 @@ const upload = multer({
 });
 
 // Middleware
-app.use(cors());
 app.use(express.json());
 app.use(bodyParser.urlencoded({ extended: true }));
+app.use(cookieParser());
+app.use(
+  cors({
+    origin: true,
+    credentials: true,
+  })
+);
 
 // Routes
 app.use("/lesson", lessonRoute);
@@ -72,11 +79,25 @@ app.post("/login", async (req, res) => {
   if (valid.status === "success" && valid.data) {
     const { parent, childrenIds } = valid.data;
 
-    // Set cookies
-    res.cookie("parentId", parent.parentId, { httpOnly: true });
-    res.cookie("children", JSON.stringify(childrenIds), { httpOnly: true });
+    // Set cookies with an expiration of 30 days
+    const thirtyDaysInMilliseconds = 30 * 24 * 60 * 60 * 1000;
 
-    res.status(200).json({ message: "Login successful!" });
+    res.cookie("parentId", parent.parentId, {
+      maxAge: thirtyDaysInMilliseconds,
+      httpOnly: false,
+    });
+    res.cookie("children", JSON.stringify(childrenIds), {
+      maxAge: thirtyDaysInMilliseconds,
+      httpOnly: false,
+    });
+
+    res.status(200).json({
+      message: "Login successful!",
+      cookies: {
+        parentId: parent.parentId,
+        children: JSON.stringify(childrenIds),
+      },
+    });
   } else {
     res.status(401).json({ message: valid.message });
   }

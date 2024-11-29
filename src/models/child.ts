@@ -111,3 +111,25 @@ export async function deleteChildren(
 
   return response;
 }
+
+export async function getChildNameById(
+  childId: number
+): Promise<CustomResponse<string>> {
+  const response: CustomResponse<string> = { status: "error", message: "" };
+
+  try {
+    const name = await prisma.child.findUnique({
+      where: { childId: childId },
+      select: { name: true },
+    });
+
+    response.status = "success";
+    response.data = name?.name;
+    response.message = "Child deleted successfully!";
+  } catch (error) {
+    response.error =
+      error instanceof Error ? error.message : "Error deleting child!";
+  }
+
+  return response;
+}

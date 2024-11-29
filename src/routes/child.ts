@@ -4,6 +4,7 @@ import {
   getChildrenByParent,
   updateChildren,
   deleteChildren,
+  getChildNameById,
 } from "../models/child";
 
 const childRoute = express.Router();
@@ -12,7 +13,7 @@ childRoute.use(express.urlencoded({ extended: true }));
 childRoute.use(express.json());
 
 // Create a new child
-childRoute.post("/create", async (req, res) => {
+childRoute.post("/", async (req, res) => {
   const { parentId, child } = req.body;
 
   if (!parentId || !child) {
@@ -49,8 +50,27 @@ childRoute.get("/:parentId", async (req, res) => {
   }
 });
 
+// Get all children by parent ID
+childRoute.get("/get/:parentId", async (req, res) => {
+  const { parentId } = req.params;
+
+  if (!parentId) {
+    res.status(400).json({ message: "Parent ID is required" });
+    return;
+  }
+
+  try {
+    const response = await getChildNameById(Number(parentId));
+    res.status(200).json(response);
+  } catch (error) {
+    res
+      .status(500)
+      .json({ error: error instanceof Error ? error.message : "Error!" });
+  }
+});
+
 // Update a child
-childRoute.put("/update", async (req, res) => {
+childRoute.put("/", async (req, res) => {
   const { child } = req.body;
 
   if (!child || !child.childId) {
@@ -69,7 +89,7 @@ childRoute.put("/update", async (req, res) => {
 });
 
 // Delete a child by ID
-childRoute.delete("/delete/:childId", async (req, res) => {
+childRoute.delete("/:childId", async (req, res) => {
   const { childId } = req.params;
 
   if (!childId) {
