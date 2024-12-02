@@ -1,10 +1,10 @@
-// src/routes/lessonRoute.ts
 import express from "express";
 import {
   CreateLesson,
   GetLesson,
   EditLesson,
   DeleteLesson,
+  GetLessonsBySub,
 } from "../models/lesson";
 import { LessonType, Subject } from "@prisma/client";
 
@@ -18,6 +18,39 @@ lessonRoute.get("/", async (req, res) => {
     res.status(200).json(response);
   } else {
     res.status(500).json(response);
+  }
+});
+
+lessonRoute.get("/:subject", async (req, res) => {
+  const { subject } = req.params;
+
+  // Validate if 'subject' is a valid Subject
+  if (!Object.values(Subject).includes(subject as Subject)) {
+    res.status(400).json({
+      status: "error",
+      message: "Invalid Subject Type.",
+    });
+    return;
+  }
+
+  // Cast subject to Subject type after validation
+  const validSubject = subject as Subject;
+
+  try {
+    const response = await GetLessonsBySub(validSubject);
+    if (response.status === "success") {
+      res.status(200).json(response);
+      return;
+    } else {
+      res.status(500).json(response);
+      return;
+    }
+  } catch (error) {
+    res.status(500).json({
+      status: "error",
+      message: "Something went wrong.",
+      error,
+    });
   }
 });
 

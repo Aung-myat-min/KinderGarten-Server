@@ -1,11 +1,6 @@
-import {
-  PrismaClient,
-  LessonType,
-  Subject,
-  Lesson,
-  Module,
-} from "@prisma/client";
+import { PrismaClient, LessonType, Lesson, Module } from "@prisma/client";
 import { CustomResponse } from "../type";
+import { Subject } from "@prisma/client";
 
 const prisma = new PrismaClient();
 
@@ -15,6 +10,33 @@ export async function GetLesson(): Promise<CustomResponse<Lesson[]>> {
     const lessons = await prisma.lesson.findMany({
       include: {
         modules: true, // Include related modules
+      },
+    });
+    return {
+      status: "success",
+      message: "Lessons retrieved successfully",
+      data: lessons,
+    };
+  } catch (error) {
+    return {
+      status: "error",
+      message: "Error retrieving lessons",
+      error: error instanceof Error ? error.message : "Error!",
+    };
+  }
+}
+
+//Fetch Lesson By Subject
+export async function GetLessonsBySub(
+  sub: Subject
+): Promise<CustomResponse<Lesson[]>> {
+  try {
+    const lessons = await prisma.lesson.findMany({
+      include: {
+        modules: true, // Include related modules
+      },
+      where: {
+        subject: sub,
       },
     });
     return {
