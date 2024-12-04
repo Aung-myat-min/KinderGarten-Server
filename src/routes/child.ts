@@ -71,7 +71,7 @@ childRoute.get("/get/:parentId", async (req, res) => {
 
 // Update a child
 childRoute.put("/", async (req, res) => {
-  const { child } = req.body;
+  const child = req.body;
 
   if (!child || !child.childId) {
     res.status(400).json({ message: "Child data with childId is required" });

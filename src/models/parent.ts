@@ -36,7 +36,7 @@ export async function GetParentById(
   try {
     const parent = await prisma.parent.findUnique({
       where: { parentId },
-      include: { children: true }, // Includes related children if needed
+      include: { children: true },
     });
 
     if (!parent) {
