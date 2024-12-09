@@ -10,6 +10,7 @@ import parentRoute from "./routes/parent";
 import childRoute from "./routes/child";
 import { loginParent } from "./models/parent";
 import cookieParser from "cookie-parser";
+import testResultRoute from "./routes/testResult";
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -54,6 +55,7 @@ app.use("/lesson", lessonRoute);
 app.use("/test", testRoute);
 app.use("/parent", parentRoute);
 app.use("/child", childRoute);
+app.use("/result", testResultRoute);
 
 // File upload route
 app.post("/upload", upload.single("image"), (req, res) => {
