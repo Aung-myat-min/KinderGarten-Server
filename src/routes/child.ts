@@ -51,16 +51,16 @@ childRoute.get("/:parentId", async (req, res) => {
 });
 
 // Get all children by parent ID
-childRoute.get("/get/:parentId", async (req, res) => {
-  const { parentId } = req.params;
+childRoute.get("/get/:childId", async (req, res) => {
+  const { childId } = req.params;
 
-  if (!parentId) {
+  if (!childId) {
     res.status(400).json({ message: "Parent ID is required" });
     return;
   }
 
   try {
-    const response = await getChildNameById(Number(parentId));
+    const response = await getChildNameById(Number(childId));
     res.status(200).json(response);
   } catch (error) {
     res
