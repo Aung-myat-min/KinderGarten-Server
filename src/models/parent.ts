@@ -1,6 +1,6 @@
-import bcrypt from "bcrypt";
 import { Parent, PrismaClient } from "@prisma/client";
 import { CustomResponse } from "../type";
+import bcrypt from "bcryptjs";
 
 const prisma = new PrismaClient();
 

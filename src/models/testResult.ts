@@ -1,30 +1,15 @@
-import { PrismaClient, TestType, Subject } from "@prisma/client";
+import { PrismaClient, TestResult } from "@prisma/client";
 import { CustomResponse } from "../type";
 
 const prisma = new PrismaClient();
 
 export async function SaveTestResult(
-  childId: number,
-  testId: number,
-  totalQuestions: number,
-  correctAnswers: number
+  testResult: TestResult
 ): Promise<CustomResponse<null>> {
   try {
-    // Calculate wrong answers
-    const wrongAnswers = totalQuestions - correctAnswers;
-
     // Save the test result
     await prisma.testResult.create({
-      data: {
-        childId,
-        testId,
-        testType: TestType.MultipleChoice, // Adjust based on the test type
-        subject: Subject.English, // Adjust based on the test subject
-        total: totalQuestions,
-        correct: correctAnswers,
-        wrong: wrongAnswers,
-        createdAt: new Date(),
-      },
+      data: testResult,
     });
 
     return {
@@ -50,7 +35,7 @@ export async function GetTestResults(
       include: {
         test: {
           include: {
-            question: true, // Include test questions if needed
+            question: true,
           },
         },
       },

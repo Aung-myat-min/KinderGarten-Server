@@ -120,10 +120,9 @@ model TestResult {
   resultId  Int      @id @default(autoincrement())
   testType  TestType
   subject   Subject
-  total     Int
-  correct   Int
-  wrong     Int
-  createdAt DateTime
+  answer    String
+  correct   Boolean
+  createdAt DateTime @default(now())
   childId   Int
   testId    Int
 

@@ -5,24 +5,18 @@ testResultRoute.use(express.json());
 
 // Save a new test result
 testResultRoute.post("/", async (req, res) => {
-  const { childId, testId, totalQuestions, correctAnswers } = req.body;
+  const { testResult } = req.body;
 
-  if (!childId || !testId || !totalQuestions || !correctAnswers) {
+  if (!testResult) {
     res.status(400).json({
       status: "error",
-      message:
-        "Child ID, Test ID, total questions, and correct answers are required.",
+      message: "Test Result is required!",
     });
     return;
   }
 
   try {
-    const response = await SaveTestResult(
-      childId,
-      testId,
-      totalQuestions,
-      correctAnswers
-    );
+    const response = await SaveTestResult(testResult);
     if (response.status === "success") {
       res.status(201).json(response);
     } else {

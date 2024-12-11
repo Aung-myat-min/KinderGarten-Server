@@ -11,6 +11,7 @@ import childRoute from "./routes/child";
 import { loginParent } from "./models/parent";
 import cookieParser from "cookie-parser";
 import testResultRoute from "./routes/testResult";
+import analysisRouter from "./routes/analysis";
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -56,6 +57,7 @@ app.use("/test", testRoute);
 app.use("/parent", parentRoute);
 app.use("/child", childRoute);
 app.use("/result", testResultRoute);
+app.use("/analysis", analysisRouter);
 
 // File upload route
 app.post("/upload", upload.single("image"), (req, res) => {
@@ -112,6 +114,6 @@ app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
 });
 
 // Start the server
-app.listen(PORT, () => {
+app.listen(PORT, async () => {
   console.log(`Server is running at http://localhost:${PORT}`);
 });
