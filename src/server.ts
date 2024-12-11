@@ -12,6 +12,7 @@ import { loginParent } from "./models/parent";
 import cookieParser from "cookie-parser";
 import testResultRoute from "./routes/testResult";
 import analysisRouter from "./routes/analysis";
+import { PrismaClient } from "@prisma/client";
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -113,7 +114,9 @@ app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
   res.status(500).json({ message: "Something went wrong!" });
 });
 
+const prisma = new PrismaClient();
 // Start the server
 app.listen(PORT, async () => {
+  // await prisma.testResult.deleteMany();
   console.log(`Server is running at http://localhost:${PORT}`);
 });
