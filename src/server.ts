@@ -13,6 +13,7 @@ import cookieParser from "cookie-parser";
 import testResultRoute from "./routes/testResult";
 import analysisRouter from "./routes/analysis";
 import { PrismaClient } from "@prisma/client";
+import mlcRoute from "./routes/lessonComplete";
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -59,6 +60,7 @@ app.use("/parent", parentRoute);
 app.use("/child", childRoute);
 app.use("/result", testResultRoute);
 app.use("/analysis", analysisRouter);
+app.use("/mlc", mlcRoute);
 
 // File upload route
 app.post("/upload", upload.single("image"), (req, res) => {
