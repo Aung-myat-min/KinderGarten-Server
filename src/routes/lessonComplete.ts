@@ -1,8 +1,9 @@
 import express from "express";
 import {
   CreateMLC,
-  GetCompletedLessonsByChildId,
+  GetLessonsBySubjectAndChild,
 } from "../models/lessonComplete";
+import { Subject } from "@prisma/client";
 
 const mlcRoute = express.Router();
 mlcRoute.use(express.urlencoded({ extended: true }));
@@ -20,21 +21,30 @@ mlcRoute.post("/create", async (req, res) => {
     res.status(500).json({ status: "error", message: "Internal server error" });
   }
 });
+// Route to get total and completed lessons by subject and childId
+mlcRoute.get("/child/:childId/subject/:subject", async (req, res) => {
+  const { childId, subject } = req.params;
 
-// Route to get completed lessons by childId
-mlcRoute.get("/child/:childId", async (req, res) => {
-  const { childId } = req.params;
+  if (!childId || !subject) {
+    res
+      .status(400)
+      .json({ status: "error", message: "Child ID and subject are required" });
+    return;
+  }
 
-  if (!childId) {
-    res.status(400).json({ status: "error", message: "Child ID is required" });
+  if (!Object.values(Subject).includes(subject as Subject)) {
+    res.status(400).json({ status: "error", message: "Invalid subject" });
     return;
   }
 
   try {
-    const response = await GetCompletedLessonsByChildId(parseInt(childId, 10));
+    const response = await GetLessonsBySubjectAndChild(
+      parseInt(childId, 10),
+      subject as Subject
+    );
     res.status(response.status === "success" ? 200 : 404).json(response);
   } catch (error) {
-    console.error("Error in fetching completed lessons:", error);
+    console.error("Error in fetching lessons data:", error);
     res.status(500).json({ status: "error", message: "Internal server error" });
   }
 });

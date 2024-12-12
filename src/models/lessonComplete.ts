@@ -1,4 +1,4 @@
-import { MarkLessonComplete, PrismaClient } from "@prisma/client";
+import { MarkLessonComplete, PrismaClient, Subject } from "@prisma/client";
 import { CustomResponse } from "../type";
 
 const prisma = new PrismaClient();
@@ -42,37 +42,39 @@ export async function CreateMLC(
 
   return response;
 }
-
-export async function GetCompletedLessonsByChildId(
-  childId: number
-): Promise<CustomResponse<MarkLessonComplete[]>> {
-  const response: CustomResponse<MarkLessonComplete[]> = {
+export async function GetLessonsBySubjectAndChild(
+  childId: number,
+  subject: Subject
+): Promise<CustomResponse<{ totalLessons: number; completedLessons: number }>> {
+  const response: CustomResponse<{
+    totalLessons: number;
+    completedLessons: number;
+  }> = {
     status: "error",
     message: "The code hasn't run",
   };
 
   try {
-    // Retrieve completed lessons by childId
-    const completedLessons = await prisma.markLessonComplete.findMany({
+    // Count total lessons for the given subject
+    const totalLessons = await prisma.lesson.count({
       where: {
-        childId,
-      },
-      include: {
-        lesson: true, // Include related lesson details
+        subject,
       },
     });
 
-    if (completedLessons.length === 0) {
-      response.status = "error";
-      response.message = "No completed lessons found for this child.";
-      return response;
-    }
+    // Count completed lessons for the child and subject
+    const completedLessons = await prisma.markLessonComplete.count({
+      where: {
+        childId,
+        subject,
+      },
+    });
 
     response.status = "success";
-    response.message = "Completed lessons retrieved successfully.";
-    response.data = completedLessons;
+    response.message = "Lessons data retrieved successfully.";
+    response.data = { totalLessons, completedLessons };
   } catch (error) {
-    console.error("Error retrieving completed lessons:", error);
+    console.error("Error retrieving lessons data:", error);
     response.message =
       error instanceof Error ? error.message : "Unknown error occurred.";
   }
