@@ -81,11 +81,11 @@ model Parent {
   parentId   Int      @id @default(autoincrement())
   name       String
   DOB        DateTime
-  NRC        String
+  NRC        String   @default("")
   gender     Gender
   email      String   @unique
   password   String
-  profileURL String
+  profileURL String   @default("https://i.pravatar.cc/150")
 
   children Child[]
 }
@@ -97,7 +97,7 @@ model Child {
   gender     Gender
   createdAt  DateTime @default(now())
   parentId   Int
-  profileURL String
+  profileURL String   @default("https://i.pravatar.cc/150")
 
   parent            Parent               @relation(fields: [parentId], references: [parentId])
   completedLesssons MarkLessonComplete[]
