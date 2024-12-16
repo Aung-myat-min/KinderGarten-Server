@@ -133,3 +133,44 @@ export async function getChildNameById(
 
   return response;
 }
+
+/**
+ * Get a list of children with their names, ages, and parent's names
+ * @returns A promise with the list of children and parent details
+ */
+export async function getChildrenWithParentDetails(): Promise<
+  CustomResponse<{ childName: string; age: number; parentName: string }[]>
+> {
+  const response: CustomResponse<
+    { childName: string; age: number; parentName: string }[]
+  > = { status: "error", message: "" };
+
+  try {
+    const children = await prisma.child.findMany({
+      include: {
+        parent: true, // Include parent details
+      },
+    });
+
+    const data = children.map((child) => {
+      const age = new Date().getFullYear() - child.DOB.getFullYear(); // Calculate age
+      return {
+        childId: child.childId,
+        childName: child.name,
+        age,
+        parentName: child.parent.name,
+      };
+    });
+
+    response.status = "success";
+    response.message = "Children with parent details fetched successfully!";
+    response.data = data;
+  } catch (error) {
+    response.error =
+      error instanceof Error
+        ? error.message
+        : "Error fetching children with parent details!";
+  }
+
+  return response;
+}

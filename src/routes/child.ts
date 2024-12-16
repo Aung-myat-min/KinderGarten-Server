@@ -5,6 +5,7 @@ import {
   updateChildren,
   deleteChildren,
   getChildNameById,
+  getChildrenWithParentDetails,
 } from "../models/child";
 
 const childRoute = express.Router();
@@ -24,6 +25,18 @@ childRoute.post("/", async (req, res) => {
   try {
     const response = await createChild(parentId, child);
     res.status(201).json(response);
+  } catch (error) {
+    res
+      .status(500)
+      .json({ error: error instanceof Error ? error.message : "Error!" });
+  }
+});
+
+childRoute.get("/admin", async (req, res) => {
+  try {
+    const children = await getChildrenWithParentDetails();
+
+    res.status(200).json(children);
   } catch (error) {
     res
       .status(500)
