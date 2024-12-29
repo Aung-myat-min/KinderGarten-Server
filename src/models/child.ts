@@ -174,3 +174,34 @@ export async function getChildrenWithParentDetails(): Promise<
 
   return response;
 }
+
+/**
+ * Get a child by their ID
+ * @param childId - The ID of the child to fetch
+ * @returns A promise with the child's information
+ */
+export async function getChildById(
+  childId: number
+): Promise<CustomResponse<Child>> {
+  const response: CustomResponse<Child> = { status: "error", message: "" };
+
+  try {
+    const child = await prisma.child.findUnique({
+      where: { childId },
+    });
+
+    if (child) {
+      response.status = "success";
+      response.message = "Child fetched successfully!";
+      response.data = child;
+    } else {
+      response.status = "error";
+      response.message = "Child not found!";
+    }
+  } catch (error) {
+    response.error =
+      error instanceof Error ? error.message : "Error fetching child!";
+  }
+
+  return response;
+}

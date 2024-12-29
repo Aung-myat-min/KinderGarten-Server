@@ -6,6 +6,7 @@ import {
   deleteChildren,
   getChildNameById,
   getChildrenWithParentDetails,
+  getChildById,
 } from "../models/child";
 
 const childRoute = express.Router();
@@ -74,6 +75,25 @@ childRoute.get("/get/:childId", async (req, res) => {
 
   try {
     const response = await getChildNameById(Number(childId));
+    res.status(200).json(response);
+  } catch (error) {
+    res
+      .status(500)
+      .json({ error: error instanceof Error ? error.message : "Error!" });
+  }
+});
+
+// Fetch a child by ID
+childRoute.get("/child/:childId", async (req, res) => {
+  const { childId } = req.params;
+
+  if (!childId) {
+    res.status(400).json({ message: "Child ID is required" });
+    return;
+  }
+
+  try {
+    const response = await getChildById(Number(childId));
     res.status(200).json(response);
   } catch (error) {
     res
